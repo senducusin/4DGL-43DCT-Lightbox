@@ -1,0 +1,243 @@
+#platform "Gen4-uLCD-43DCT-CLB"
+
+#inherit "4DGL_16bitColours.fnc"
+
+#inherit "VisualConst.inc"
+
+#inherit "Light Box_landscapeConst.inc"
+
+var posn,x,y,touchState,tChecker,mode,btn1,btn2,btn3,frame1,frame2,frame3;
+
+func main()
+
+///////////PWM Pins/////////////
+    pin_Set(PIN_OUT, PA4);  ////
+    pin_Set(PIN_OUT, PA5);  ////
+    pin_Set(PIN_OUT, PA6);  ////
+///////////////////////////////
+
+////////Pull-down Pins/////////
+    pin_Set(PIN_OUT, PA7); ////
+    pin_Set(PIN_OUT, PA8); ////
+    pin_Set(PIN_OUT, PA9); ////
+///////////////////////////////
+
+    pin_Set(PIN_OUT, PA15); //3.3V  for OP-AMP
+
+    pin_HI(PA7);
+    pin_HI(PA8);
+    pin_HI(PA9);
+
+    pin_HI(PA15);
+
+    touch_Set(TOUCH_ENABLE);
+    putstr("Mounting...\n");
+    if (!(file_Mount()))
+        while(!(file_Mount()))
+            putstr("Drive not mounted...");
+            pause(200);
+            gfx_Cls();
+            pause(200);
+        wend
+    endif
+
+    hndl := file_LoadImageControl("LIGHTB~1.dat", "LIGHTB~1.gci", 1);
+    gfx_Set(SCREEN_MODE,LANDSCAPE) ;
+    gfx_Cls();
+
+    img_Show(hndl,iForm1) ;
+    img_SetAttributes(hndl,iForm1, I_TOUCH_DISABLE);
+    img_Show(hndl,iImage2) ;
+    img_SetWord(hndl, iUserimages1, IMAGE_INDEX, 0) ;
+    img_Show(hndl,iUserimages1) ;
+
+    img_ClearAttributes(hndl, i4Dbutton4, I_TOUCH_DISABLE);
+    img_Show(hndl, i4Dbutton4);
+    img_SetWord(hndl, i4Dbutton4, IMAGE_INDEX, 0);
+    img_Show(hndl,i4Dbutton4) ;
+
+
+    img_ClearAttributes(hndl, i4Dbutton1, I_TOUCH_DISABLE);
+    img_Show(hndl, i4Dbutton1);
+    img_SetWord(hndl, i4Dbutton1, IMAGE_INDEX, 0);
+    img_Show(hndl,i4Dbutton1) ;
+
+    img_ClearAttributes(hndl, i4Dbutton2, I_TOUCH_DISABLE);
+    img_Show(hndl, i4Dbutton2);
+    img_SetWord(hndl, i4Dbutton2, IMAGE_INDEX, 0);
+    img_Show(hndl,i4Dbutton2) ;
+
+    img_Show(hndl,iStatictext1) ;
+    img_Show(hndl,iStatictext2) ;
+    img_Show(hndl,iStatictext3) ;
+
+    img_Show(hndl,iSmartSlider1) ;
+    img_Show(hndl,iSmartSlider2) ;
+    img_Show(hndl,iSmartSlider3) ;
+
+    img_ClearAttributes(hndl, iSmartSlider1, I_TOUCH_DISABLE);
+    img_ClearAttributes(hndl, iSmartSlider2, I_TOUCH_DISABLE);
+    img_ClearAttributes(hndl, iSmartSlider2, I_TOUCH_DISABLE);
+    img_ClearAttributes(hndl, iSmartSlider3, I_TOUCH_DISABLE);
+
+    repeat
+     touchState := touch_Get(TOUCH_STATUS);
+       tChecker := img_Touched(hndl, -1);
+     if(btn1==1 || btn2 == 1 || btn3 == 1)
+     img_Show(hndl,iImage1) ;
+     else
+     img_Show(hndl,iImage2) ;
+     endif
+     if(touchState == TOUCH_PRESSED)
+                x := touch_Get(TOUCH_GETX);
+                y := touch_Get(TOUCH_GETY);
+                if(tChecker == i4Dbutton4)
+                      if(btn1 == 0)
+                            pin_LO(PA9);
+                            pin_Set(PIN_OUT, PA6);
+
+                            btn1 := 1;
+                            mode += 1;
+                      else
+                            btn1 := 0;
+                            mode -= 1;
+                            frame1 := 0;
+
+                            img_SetWord(hndl, iSmartSlider1, IMAGE_INDEX, frame1);
+                            img_Show(hndl, iSmartSlider1);
+
+                            pin_LO(PA6);
+                            pin_Set(PIN_INP_LO,PA6);
+
+                            pin_HI(PA9);
+                      endif
+                      BTNTop();
+                else if (tChecker == i4Dbutton1)
+                      if(btn2 == 0)
+                            pin_LO(PA7);
+                            pin_Set(PIN_OUT, PA4);
+
+                            btn2 := 1;
+                            mode += 2;
+                      else
+                            btn2 := 0;
+                            mode -= 2;
+                            frame2 := 0;
+
+                            img_SetWord(hndl, iSmartSlider2, IMAGE_INDEX, frame2);
+                            img_Show(hndl, iSmartSlider2);
+
+                            pin_LO(PA4);
+                            pin_Set(PIN_INP_LO,PA4);
+
+                            pin_HI(PA7);
+                      endif
+                      BTNLeft();
+                else if (tChecker == i4Dbutton2)
+                      if(btn3 == 0)
+                            pin_LO(PA8);
+                            pin_Set(PIN_OUT, PA5);
+                            btn3 := 1;
+                            mode += 4;
+                      else
+                            btn3 := 0;
+                            mode -= 4;
+                            frame3 := 0;
+
+                            img_SetWord(hndl, iSmartSlider3, IMAGE_INDEX, frame3);
+                            img_Show(hndl, iSmartSlider3);
+
+                            pin_LO(PA5);
+                            pin_Set(PIN_INP_LO,PA5);
+
+                            pin_HI(PA8);
+                      endif
+                      BTNRight();
+                endif
+
+       else if(touchState == TOUCH_RELEASED)
+
+       else if(touchState == TOUCH_MOVING)
+                x := touch_Get(TOUCH_GETX);
+                y := touch_Get(TOUCH_GETY);
+                if(tChecker == iSmartSlider1 && btn1 == 1)
+                slider1();
+                else if(tChecker == iSmartSlider2 && btn2 == 1)
+                slider2();
+                else if(tChecker == iSmartSlider3 && btn3 == 1)
+                slider3();
+                endif
+       endif
+    forever
+endfunc
+
+func BTNTop()
+    img_SetWord(hndl, i4Dbutton4, IMAGE_INDEX, btn1);
+    img_Show(hndl,i4Dbutton4) ;
+    img_SetWord(hndl, iUserimages1, IMAGE_INDEX, mode) ;
+    img_Show(hndl,iUserimages1) ;
+endfunc
+
+func BTNLeft()
+    img_SetWord(hndl, i4Dbutton1, IMAGE_INDEX, btn2);
+    img_Show(hndl,i4Dbutton1) ;
+    img_SetWord(hndl, iUserimages1, IMAGE_INDEX, mode) ;
+    img_Show(hndl,iUserimages1) ;
+endfunc
+
+func BTNRight()
+    img_SetWord(hndl, i4Dbutton2, IMAGE_INDEX, btn3);
+    img_Show(hndl,i4Dbutton2) ;
+    img_SetWord(hndl, iUserimages1, IMAGE_INDEX, mode) ;
+    img_Show(hndl,iUserimages1) ;
+endfunc
+
+
+func slider1()
+    frame1 := x - 288 ;
+    if (frame1 < 0)
+        frame1 := 0 ;
+    else if (frame1 > 186)
+        frame1 := 100 ;
+    else
+        frame1 := 100 * frame1 / 186 ;
+    endif
+    img_SetWord(hndl, iSmartSlider1, IMAGE_INDEX, frame1);
+    img_Show(hndl, iSmartSlider1);
+    pwm_Init(PA6,PWM_PLAIN,frame1);
+endfunc
+
+
+func slider2()
+    frame2 := x - 288 ;
+    if (frame2 < 0)
+        frame2 := 0 ;
+    else if (frame2 > 186)
+        frame2 := 100 ;
+    else
+        frame2 := 100 * frame2 / 186 ;
+    endif
+
+    img_SetWord(hndl, iSmartSlider2, IMAGE_INDEX, frame2);
+    img_Show(hndl, iSmartSlider2);
+    pwm_Init(PA4,PWM_PLAIN,frame2);
+endfunc
+
+
+
+func slider3()
+    frame3 := x - 288 ;
+    if (frame3 < 0)
+        frame3 := 0 ;
+    else if (frame3 > 186)
+        frame3 := 100 ;
+    else
+        frame3 := 100 * frame3 / 186 ;
+    endif
+
+    img_SetWord(hndl, iSmartSlider3, IMAGE_INDEX, frame3);
+    img_Show(hndl, iSmartSlider3);
+    pwm_Init(PA5,PWM_PLAIN,frame3);
+endfunc
+
+
