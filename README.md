@@ -3,7 +3,7 @@ A simple microcontroller-based project using 4D Systems' gen4 touchscreen displa
 
 ## About the Project
 
-* This project aims to create a functional lightbox circuit, with the ability to control the brightness of each individual LED-strip node thru the sliders on the touchscreen display with the use of 4DGL.
+* This project aims to create a functional lightbox circuit with the ability to control the brightness of each individual LED-strip node, thru the sliders on the touchscreen display.
 
 * This project uses a Workshop4 Pro feature: Smart Widgets
 
